@@ -8,6 +8,8 @@ var Tests = function ($) {
 
     var workshopTests = new jqUnit.TestCase("Workshop Tests");
 
+    //////////////////////// LITTLE COMPONENT ///////////////////////////
+
     workshopTests.test("Test Little Component", function () {
         fluid.defaults("test.littleComponent", {
             gradeNames: ["fluid.littleComponent", "autoInit"],
@@ -25,6 +27,8 @@ var Tests = function ($) {
         jqUnit.assertEquals("After creating a little component the option should be", 
             "test field is modified", littleComponent2.options.someField);
     });
+
+    //////////////////////// MODEL COMPONENT ///////////////////////////
 
     workshopTests.test("Test Model Component", function () {
         fluid.defaults("test.modelComponent", {
@@ -53,6 +57,8 @@ var Tests = function ($) {
         }, modelComponent1.model);
     });
 
+    //////////////////////// EVENTED COMPONENT ///////////////////////////
+
     workshopTests.test("Test Evented Component", function () {
 
         expect(4);
@@ -80,7 +86,7 @@ var Tests = function ($) {
                 }
             });
 
-        // Model component automatically initializes its model and applier.
+        // Evented component automatically initializes its events and listeners.
         jqUnit.assertValue("After creating an evented component the component should have events initialized",
             eventedComponent1.events.someEvent);
         jqUnit.assertTrue("After creating an evented component the component should have events initialized",
@@ -92,6 +98,59 @@ var Tests = function ($) {
             ok("newEvent fired", true);
         });
         eventedComponent2.events.newEvent.fire();
+    });
+
+    //////////////////////// VIEW COMPONENT ///////////////////////////
+
+    workshopTests.test("Test View Component", function () {
+        fluid.defaults("test.viewComponent", {
+            gradeNames: ["fluid.viewComponent", "autoInit"],
+            selectors: {
+                internal: ".internal-selector"
+            }
+        });
+
+        var viewComponent = test.viewComponent(".view-component"),
+            internal = viewComponent.locate("internal");
+
+        // View Component automatically initializes its dome binder.
+        jqUnit.assertEquals("Selectors should be found", 1, internal.length);
+
+        internal.hide();
+        jqUnit.assertTrue("Selector is now hidden", internal.is(":hidden"));
+    });
+
+    //////////////////////// RENDERER COMPONENT ///////////////////////////
+
+    workshopTests.test("Test Renderer Component", function () {
+        fluid.defaults("test.rendererComponent", {
+            gradeNames: ["fluid.rendererComponent", "autoInit"],
+            selectors: {
+                internal: ".internal-selector"
+            },
+            model: {
+                someField: "VALUE"
+            },
+            protoTree: {
+                internal: "${someField}"
+            },
+            renderOnInit: true
+        });
+
+        var rendererComponent = test.rendererComponent(".renderer-component"),
+            internal = rendererComponent.locate("internal");
+
+        // Renderer Component automatically renders automatically if renderOnInit is set to true.
+        jqUnit.assertEquals("Internal selector should be rendered", "VALUE", internal.val());
+
+        rendererComponent.applier.requestChange("someField", "NEW VALUE");
+        rendererComponent.refreshView();
+        internal = rendererComponent.locate("internal");
+        jqUnit.assertEquals("Internal selector should be updagted", "NEW VALUE", internal.val());
+
+        // Data binding
+        internal.val("NEWER VALUE").change();
+        jqUnit.assertEquals("Model should be updagted", "NEWER VALUE", rendererComponent.model.someField);
     });
 };
 
