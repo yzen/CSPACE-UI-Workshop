@@ -152,6 +152,48 @@ var Tests = function ($) {
         internal.val("NEWER VALUE").change();
         jqUnit.assertEquals("Model should be updagted", "NEWER VALUE", rendererComponent.model.someField);
     });
+
+    //////////////////////// SUBCOMPONENTS ///////////////////////////
+
+    workshopTests.test("Test Subcomponent", function () {
+        fluid.defaults("test.littleComponentParent", {
+            gradeNames: ["fluid.littleComponent", "autoInit"],
+            someField: "this is a test field",
+            someField2: "this is a test field 2",
+            components: {
+                subcomponent: {
+                    type: "test.littleComponent",
+                    options: {
+                        field: "{test.littleComponentParent}.options.someField"
+                    }
+                }
+            }
+        });
+
+        var littleComponentParent = test.littleComponentParent();
+
+        // Subcomponents are automatically initialized during parent component creation.
+        jqUnit.assertValue("After creating a parent component the subcomponents should be created too", littleComponentParent.subcomponent);
+        jqUnit.assertEquals("Option should be correctly passed to subcomponent",
+            littleComponentParent.options.someField, littleComponentParent.subcomponent.options.field);
+    });
+
+    //////////////////////// INVERSION OF CONTROL ///////////////////////////
+
+    workshopTests.test("Test Inversion of Control", function () {
+        fluid.demands("test.littleComponent", "test.littleComponentParent", {
+            options: {
+                field: "{test.littleComponentParent}.options.someField2"
+            }
+        });
+
+        var littleComponentParent = test.littleComponentParent();
+
+        // If component has previously registered demands and the context matches, the depamds block will
+        // be also used during options merging.
+        jqUnit.assertEquals("Option should be correctly passed to subcomponent from demands",
+            littleComponentParent.options.someField2, littleComponentParent.subcomponent.options.field);
+    });
 };
 
 (function () {
