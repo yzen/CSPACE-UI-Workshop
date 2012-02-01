@@ -173,7 +173,8 @@ var Tests = function ($) {
         var littleComponentParent = test.littleComponentParent();
 
         // Subcomponents are automatically initialized during parent component creation.
-        jqUnit.assertValue("After creating a parent component the subcomponents should be created too", littleComponentParent.subcomponent);
+        jqUnit.assertValue("After creating a parent component the subcomponents should be created too",
+            littleComponentParent.subcomponent);
         jqUnit.assertEquals("Option should be correctly passed to subcomponent",
             littleComponentParent.options.someField, littleComponentParent.subcomponent.options.field);
     });
