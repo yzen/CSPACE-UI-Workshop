@@ -229,6 +229,37 @@ var Tests = function ($) {
         jqUnit.assertEquals("Correct demands resolution for an invoker",
             "HELLO: this is test.componentWithInvoker.basicInvoker1", componentWithInvoker.basicInvoker2());
     });
+
+    //////////////////////// LIFECYCLE FUNCTIONS ///////////////////////////
+
+    workshopTests.test("Test Inversion of Control", function () {
+        fluid.defaults("test.lifecycleFunctionsComponent", {
+            gradeNames: ["fluid.littleComponent", "autoInit"],
+            preInitFunction: "test.lifecycleFunctionsComponent.preInit",
+            postInitFunction: "test.lifecycleFunctionsComponent.postInit",
+            finalInitFunction: "test.lifecycleFunctionsComponent.finalInit"
+        });
+
+        test.lifecycleFunctionsComponent.preInit = function (that) {
+            that.preInitOption = "pre";
+        };
+
+        test.lifecycleFunctionsComponent.postInit = function (that) {
+            that.postInitOption = "post";
+        };
+
+        test.lifecycleFunctionsComponent.finalInit = function (that) {
+            that.finalInitOption = "final";
+        };
+
+        var lifecycleFunctionsComponent = test.lifecycleFunctionsComponent();
+
+        // Autoinit component will execute all lifecycle functions specified.
+        fluid.each(["pre", "post", "final"], function (cycle) {
+            jqUnit.assertEquals("Option should be set in the right lifecycle function", cycle,
+                lifecycleFunctionsComponent[cycle + "InitOption"]);
+        });
+    });
 };
 
 (function () {
