@@ -195,6 +195,40 @@ var Tests = function ($) {
         jqUnit.assertEquals("Option should be correctly passed to subcomponent from demands",
             littleComponentParent.options.someField2, littleComponentParent.subcomponent.options.field);
     });
+
+    //////////////////////// INVOKERS ///////////////////////////
+    workshopTests.test("Test Invokers", function () {
+        fluid.defaults("test.componentWithInvoker", {
+            gradeNames: ["fluid.littleComponent", "autoInit"],
+            someField: "HELLO",
+            invokers: {
+                basicInvoker1: {
+                    funcName: "test.componentWithInvoker.basicInvoker1",
+                    args: ["{test.componentWithInvoker}.options.someField"]
+                },
+                basicInvoker2: "test.componentWithInvoker.basicInvoker2"
+            }
+        });
+
+        test.componentWithInvoker.basicInvoker1 = function (field) {
+            return field + ": this is test.componentWithInvoker.basicInvoker1";
+        };
+
+        fluid.demands("test.componentWithInvoker.basicInvoker2", "test.componentWithInvoker", {
+            funcName: "test.componentWithInvoker.basicInvoker1",
+            args: ["{test.componentWithInvoker}.options.someField"]
+        });
+
+        var componentWithInvoker = test.componentWithInvoker();
+
+        // Invokers are automatically created during component initialization. Demands for invokers
+        // are resolved on initialization but actual arguments are evaluated every time
+        // the invoker is called.
+        jqUnit.assertEquals("Correct invoker is initialized",
+            "HELLO: this is test.componentWithInvoker.basicInvoker1", componentWithInvoker.basicInvoker1());
+        jqUnit.assertEquals("Correct demands resolution for an invoker",
+            "HELLO: this is test.componentWithInvoker.basicInvoker1", componentWithInvoker.basicInvoker2());
+    });
 };
 
 (function () {
