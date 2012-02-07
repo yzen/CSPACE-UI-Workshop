@@ -147,11 +147,11 @@ var Tests = function ($) {
         rendererComponent.applier.requestChange("someField", "NEW VALUE");
         rendererComponent.refreshView();
         internal = rendererComponent.locate("internal");
-        jqUnit.assertEquals("Internal selector should be updagted", "NEW VALUE", internal.val());
+        jqUnit.assertEquals("Internal selector should be updated", "NEW VALUE", internal.val());
 
         // Data binding
         internal.val("NEWER VALUE").change();
-        jqUnit.assertEquals("Model should be updagted", "NEWER VALUE", rendererComponent.model.someField);
+        jqUnit.assertEquals("Model should be updated", "NEWER VALUE", rendererComponent.model.someField);
     });
 
     //////////////////////// SUBCOMPONENTS ///////////////////////////
