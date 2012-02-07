@@ -10,12 +10,12 @@ var Tests = function ($) {
 
     //////////////////////// LITTLE COMPONENT ///////////////////////////
 
-    workshopTests.test("Test Little Component", function () {
-        fluid.defaults("test.littleComponent", {
-            gradeNames: ["fluid.littleComponent", "autoInit"],
-            someField: "this is a test field"
-        });
+    fluid.defaults("test.littleComponent", {
+        gradeNames: ["fluid.littleComponent", "autoInit"],
+        someField: "this is a test field"
+    });
 
+    workshopTests.test("Test Little Component", function () {
         var littleComponent1 = test.littleComponent(),
             littleComponent2 = test.littleComponent({
                 someField: "test field is modified"
@@ -30,11 +30,11 @@ var Tests = function ($) {
 
     //////////////////////// MODEL COMPONENT ///////////////////////////
 
-    workshopTests.test("Test Model Component", function () {
-        fluid.defaults("test.modelComponent", {
-            gradeNames: ["fluid.modelComponent", "autoInit"]
-        });
+    fluid.defaults("test.modelComponent", {
+        gradeNames: ["fluid.modelComponent", "autoInit"]
+    });
 
+    workshopTests.test("Test Model Component", function () {
         var modelComponent1 = test.modelComponent(),
             modelComponent2 = test.modelComponent({
                 model: {
@@ -59,20 +59,20 @@ var Tests = function ($) {
 
     //////////////////////// EVENTED COMPONENT ///////////////////////////
 
+    fluid.defaults("test.eventedComponent", {
+        gradeNames: ["fluid.eventedComponent", "autoInit"],
+        events: {
+            someEvent: null
+        },
+        listeners: {} // optional
+    });
+
     workshopTests.test("Test Evented Component", function () {
 
         expect(4);
 
-        fluid.defaults("test.eventedComponent", {
-            gradeNames: ["fluid.eventedComponent", "autoInit"],
-            events: {
-                someEvent: null
-            },
-            listeners: {} // optional
-        });
-
         var eventHandler = function () {
-            ok("someEvent fired", true);
+            jqUnit.assert("someEvent fired");
         };
 
         var eventedComponent1 = test.eventedComponent({
@@ -95,20 +95,21 @@ var Tests = function ($) {
         eventedComponent1.events.someEvent.fire();
 
         eventedComponent2.events.newEvent.addListener(function () {
-            ok("newEvent fired", true);
+            jqUnit.assert("newEvent fired");
         });
         eventedComponent2.events.newEvent.fire();
     });
 
     //////////////////////// VIEW COMPONENT ///////////////////////////
 
+    fluid.defaults("test.viewComponent", {
+        gradeNames: ["fluid.viewComponent", "autoInit"],
+        selectors: {
+            internal: ".internal-selector"
+        }
+    });
+
     workshopTests.test("Test View Component", function () {
-        fluid.defaults("test.viewComponent", {
-            gradeNames: ["fluid.viewComponent", "autoInit"],
-            selectors: {
-                internal: ".internal-selector"
-            }
-        });
 
         var viewComponent = test.viewComponent(".view-component"),
             internal = viewComponent.locate("internal");
@@ -122,21 +123,21 @@ var Tests = function ($) {
 
     //////////////////////// RENDERER COMPONENT ///////////////////////////
 
-    workshopTests.test("Test Renderer Component", function () {
-        fluid.defaults("test.rendererComponent", {
-            gradeNames: ["fluid.rendererComponent", "autoInit"],
-            selectors: {
-                internal: ".internal-selector"
-            },
-            model: {
-                someField: "VALUE"
-            },
-            protoTree: {
-                internal: "${someField}"
-            },
-            renderOnInit: true
-        });
+    fluid.defaults("test.rendererComponent", {
+        gradeNames: ["fluid.rendererComponent", "autoInit"],
+        selectors: {
+            internal: ".internal-selector"
+        },
+        model: {
+            someField: "VALUE"
+        },
+        protoTree: {
+            internal: "${someField}"
+        },
+        renderOnInit: true
+    });
 
+    workshopTests.test("Test Renderer Component", function () {
         var rendererComponent = test.rendererComponent(".renderer-component"),
             internal = rendererComponent.locate("internal");
 
@@ -155,21 +156,21 @@ var Tests = function ($) {
 
     //////////////////////// SUBCOMPONENTS ///////////////////////////
 
-    workshopTests.test("Test Subcomponent", function () {
-        fluid.defaults("test.littleComponentParent", {
-            gradeNames: ["fluid.littleComponent", "autoInit"],
-            someField: "this is a test field",
-            someField2: "this is a test field 2",
-            components: {
-                subcomponent: {
-                    type: "test.littleComponent",
-                    options: {
-                        field: "{test.littleComponentParent}.options.someField"
-                    }
+    fluid.defaults("test.littleComponentParent", {
+        gradeNames: ["fluid.littleComponent", "autoInit"],
+        someField: "this is a test field",
+        someField2: "this is a test field 2",
+        components: {
+            subcomponent: {
+                type: "test.littleComponent",
+                options: {
+                    field: "{test.littleComponentParent}.options.someField"
                 }
             }
-        });
+        }
+    });
 
+    workshopTests.test("Test Subcomponent", function () {
         var littleComponentParent = test.littleComponentParent();
 
         // Subcomponents are automatically initialized during parent component creation.
@@ -181,47 +182,62 @@ var Tests = function ($) {
 
     //////////////////////// INVERSION OF CONTROL ///////////////////////////
 
-    workshopTests.test("Test Inversion of Control", function () {
-        fluid.demands("test.littleComponent", "test.littleComponentParent", {
-            options: {
-                field: "{test.littleComponentParent}.options.someField2"
+    fluid.defaults("test.littleComponentParent2", {
+        gradeNames: ["fluid.littleComponent", "autoInit"],
+        someField: "this is a test field",
+        someField2: "this is a test field 2",
+        components: {
+            subcomponent: {
+                type: "test.littleComponent",
+                options: {
+                    field: "{test.littleComponentParent2}.options.someField"
+                }
             }
-        });
+        }
+    });
 
-        var littleComponentParent = test.littleComponentParent();
+    fluid.demands("test.littleComponent", "test.littleComponentParent2", {
+        options: {
+            field: "{test.littleComponentParent2}.options.someField2"
+        }
+    });
+
+    workshopTests.test("Test Inversion of Control", function () {
+        var littleComponentParent2 = test.littleComponentParent2();
 
         // If component has previously registered demands and the context matches, the depamds block will
         // be also used during options merging.
         jqUnit.assertEquals("Option should be correctly passed to subcomponent from demands",
-            littleComponentParent.options.someField2, littleComponentParent.subcomponent.options.field);
+            littleComponentParent2.options.someField2, littleComponentParent2.subcomponent.options.field);
     });
 
     //////////////////////// INVOKERS ///////////////////////////
-    workshopTests.test("Test Invokers", function () {
-        fluid.defaults("test.componentWithInvoker", {
-            gradeNames: ["fluid.littleComponent", "autoInit"],
-            someField: "HELLO",
-            invokers: {
-                basicInvoker1: {
-                    funcName: "test.componentWithInvoker.basicInvoker1",
-                    args: ["{test.componentWithInvoker}.options.someField"]
-                },
-                basicInvoker2: "test.componentWithInvoker.basicInvoker2",
-                invokerWithArguments: {
-                    funcName: "test.componentWithInvoker.basicInvoker1",
-                    args: ["{arguments}.0"]
-                }
-            }
-        });
 
+    fluid.defaults("test.componentWithInvoker", {
+        gradeNames: ["fluid.littleComponent", "autoInit"],
+        someField: "HELLO",
+        invokers: {
+            basicInvoker1: {
+                funcName: "test.componentWithInvoker.basicInvoker1",
+                args: ["{test.componentWithInvoker}.options.someField"]
+            },
+            basicInvoker2: "test.componentWithInvoker.basicInvoker2",
+            invokerWithArguments: {
+                funcName: "test.componentWithInvoker.basicInvoker1",
+                args: ["{arguments}.0"]
+            }
+        }
+    });
+
+    fluid.demands("test.componentWithInvoker.basicInvoker2", "test.componentWithInvoker", {
+        funcName: "test.componentWithInvoker.basicInvoker1",
+        args: ["{test.componentWithInvoker}.options.someField"]
+    });
+
+    workshopTests.test("Test Invokers", function () {
         test.componentWithInvoker.basicInvoker1 = function (field) {
             return field + ": this is test.componentWithInvoker.basicInvoker1";
         };
-
-        fluid.demands("test.componentWithInvoker.basicInvoker2", "test.componentWithInvoker", {
-            funcName: "test.componentWithInvoker.basicInvoker1",
-            args: ["{test.componentWithInvoker}.options.someField"]
-        });
 
         var componentWithInvoker = test.componentWithInvoker();
 
@@ -238,14 +254,14 @@ var Tests = function ($) {
 
     //////////////////////// LIFECYCLE FUNCTIONS ///////////////////////////
 
-    workshopTests.test("Test Inversion of Control", function () {
-        fluid.defaults("test.lifecycleFunctionsComponent", {
-            gradeNames: ["fluid.littleComponent", "autoInit"],
-            preInitFunction: "test.lifecycleFunctionsComponent.preInit",
-            postInitFunction: "test.lifecycleFunctionsComponent.postInit",
-            finalInitFunction: "test.lifecycleFunctionsComponent.finalInit"
-        });
+    fluid.defaults("test.lifecycleFunctionsComponent", {
+        gradeNames: ["fluid.littleComponent", "autoInit"],
+        preInitFunction: "test.lifecycleFunctionsComponent.preInit",
+        postInitFunction: "test.lifecycleFunctionsComponent.postInit",
+        finalInitFunction: "test.lifecycleFunctionsComponent.finalInit"
+    });
 
+    workshopTests.test("Test Inversion of Control", function () {
         test.lifecycleFunctionsComponent.preInit = function (that) {
             that.preInitOption = "pre";
         };
