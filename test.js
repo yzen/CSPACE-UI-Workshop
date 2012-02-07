@@ -90,7 +90,7 @@ var Tests = function ($) {
         jqUnit.assertValue("After creating an evented component the component should have events initialized",
             eventedComponent1.events.someEvent);
         jqUnit.assertTrue("After creating an evented component the component should have events initialized",
-            !!eventedComponent2.events.someEvent && !!eventedComponent2.events.newEvent);
+            eventedComponent2.events.someEvent && eventedComponent2.events.newEvent);
 
         eventedComponent1.events.someEvent.fire();
 
@@ -206,7 +206,11 @@ var Tests = function ($) {
                     funcName: "test.componentWithInvoker.basicInvoker1",
                     args: ["{test.componentWithInvoker}.options.someField"]
                 },
-                basicInvoker2: "test.componentWithInvoker.basicInvoker2"
+                basicInvoker2: "test.componentWithInvoker.basicInvoker2",
+                invokerWithArguments: {
+                    funcName: "test.componentWithInvoker.basicInvoker1",
+                    args: ["{arguments}.0"]
+                }
             }
         });
 
@@ -228,6 +232,8 @@ var Tests = function ($) {
             "HELLO: this is test.componentWithInvoker.basicInvoker1", componentWithInvoker.basicInvoker1());
         jqUnit.assertEquals("Correct demands resolution for an invoker",
             "HELLO: this is test.componentWithInvoker.basicInvoker1", componentWithInvoker.basicInvoker2());
+        jqUnit.assertEquals("Correct initialization of an invoker with arguments",
+            "I AM AN ARGUMENT: this is test.componentWithInvoker.basicInvoker1", componentWithInvoker.invokerWithArguments("I AM AN ARGUMENT"));
     });
 
     //////////////////////// LIFECYCLE FUNCTIONS ///////////////////////////
