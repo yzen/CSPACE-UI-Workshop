@@ -157,15 +157,22 @@ var Tests = function ($) {
     //////////////////////// SUBCOMPONENTS ///////////////////////////
 
     fluid.defaults("test.littleComponentParent", {
-        gradeNames: ["fluid.littleComponent", "autoInit"],
+        gradeNames: ["fluid.eventedComponent", "autoInit"],
         someField: "this is a test field",
         someField2: "this is a test field 2",
+        events: {
+            createSubcomponent: null
+        },
         components: {
             subcomponent: {
                 type: "test.littleComponent",
                 options: {
                     field: "{test.littleComponentParent}.options.someField"
                 }
+            },
+            subcomponentOnEvent: {
+                type: "test.littleComponent",
+                createOnEvent: "createSubcomponent"
             }
         }
     });
@@ -178,6 +185,10 @@ var Tests = function ($) {
             littleComponentParent.subcomponent);
         jqUnit.assertEquals("Option should be correctly passed to subcomponent",
             littleComponentParent.options.someField, littleComponentParent.subcomponent.options.field);
+        jqUnit.assertUndefined("subcomponentOnEvent should not be initialized until createSubcomponent event is fired",
+            littleComponentParent.subcomponentOnEvent);
+        littleComponentParent.events.createSubcomponent.fire();
+        jqUnit.assertValue("subcomponentOnEvent should now be initialized", littleComponentParent.subcomponentOnEvent);
     });
 
     //////////////////////// INVERSION OF CONTROL ///////////////////////////
@@ -216,6 +227,11 @@ var Tests = function ($) {
     fluid.defaults("test.componentWithInvoker", {
         gradeNames: ["fluid.littleComponent", "autoInit"],
         someField: "HELLO",
+        components: {
+            child: {
+                type: "test.littleComponent"
+            }
+        },
         invokers: {
             basicInvoker1: {
                 funcName: "test.componentWithInvoker.basicInvoker1",
@@ -225,6 +241,10 @@ var Tests = function ($) {
             invokerWithArguments: {
                 funcName: "test.componentWithInvoker.basicInvoker1",
                 args: ["{arguments}.0"]
+            },
+            invokerAndIOC: {
+                funcName: "test.componentWithInvoker.basicInvoker1",
+                args: ["{child}.options.someField"]
             }
         }
     });
@@ -250,6 +270,8 @@ var Tests = function ($) {
             "HELLO: this is test.componentWithInvoker.basicInvoker1", componentWithInvoker.basicInvoker2());
         jqUnit.assertEquals("Correct initialization of an invoker with arguments",
             "I AM AN ARGUMENT: this is test.componentWithInvoker.basicInvoker1", componentWithInvoker.invokerWithArguments("I AM AN ARGUMENT"));
+        jqUnit.assertEquals("Correct initialization of an invoker and arguments resolvable through IOC",
+            "this is a test field: this is test.componentWithInvoker.basicInvoker1", componentWithInvoker.invokerAndIOC());
     });
 
     //////////////////////// LIFECYCLE FUNCTIONS ///////////////////////////
