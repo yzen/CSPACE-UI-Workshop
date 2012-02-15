@@ -247,7 +247,12 @@ var Tests = function ($) {
         gradeNames: ["fluid.eventedComponent", "autoInit"],
         events: {
             someEvent: null,
-            someOtherEvent: null
+            someOtherEvent: null,
+            localEvent: null,
+            parentEvent: null,
+            boiledLocal: {
+                event: "localEvent"
+            }
         },
         field: "EC2 OPTION",
         listeners: {
@@ -266,6 +271,15 @@ var Tests = function ($) {
     fluid.defaults("test.eventBinderParent", {
         gradeNames: ["fluid.eventedComponent", "autoInit"],
         preInitFunction: "test.eventBinderParent.preInit",
+        events: {
+            boiledParent: {
+                event: "{test.eventedComponent2}.events.parentEvent",
+                args: [
+                    "{test.eventedComponent2}.options.field",
+                    "{arguments}.0"
+                ]
+            }
+        },
         components: {
             eventBinder: {
                 type: "test.eventedParent.eventBinder"
@@ -278,6 +292,11 @@ var Tests = function ($) {
             jqUnit.assert("Event boiling works correctly.");
         };
     };
+
+    fluid.demands("boiledLocal", "test.eventedComponent2", [
+        "{test.eventedComponent2}.options.field",
+        "{arguments}.0"
+    ]);
 
     fluid.demands("test.eventedParent.eventBinder", ["test.eventBinderParent", "test.eventedComponent2"], {
         options: {
@@ -292,7 +311,7 @@ var Tests = function ($) {
     });
 
     workshopTests.test("Test Event Boiling", function () {
-        expect(4);
+        expect(/*12*/10);
         var eventedComponent2 = test.eventedComponent2(),
             eventArg = "This is an event argument";
 
@@ -305,6 +324,20 @@ var Tests = function ($) {
             jqUnit.assertEquals("Argument 2 was passed correctly", eventArg, arguments[1]);
         });
         eventedComponent2.events.someEvent.fire(eventArg);
+
+        eventedComponent2.events.boiledLocal.addListener(function () {
+            jqUnit.assertEquals("Argument 1 was passed correctly", eventedComponent2.options.field, arguments[0]);
+            jqUnit.assertEquals("Argument 2 was passed correctly", eventArg, arguments[1]);
+        });
+        eventedComponent2.events.localEvent.fire(eventArg);
+        eventedComponent2.events.boiledLocal.fire(eventArg);
+
+        eventedComponent2.eventBinderParent.events.boiledParent.addListener(function () {
+            jqUnit.assertEquals("Argument 1 was passed correctly", eventedComponent2.options.field, arguments[0]);
+            jqUnit.assertEquals("Argument 2 was passed correctly", eventArg, arguments[1]);
+        });
+        eventedComponent2.events.parentEvent.fire(eventArg);
+/*         eventedComponent2.eventBinderParent.events.boiledParent.fire(eventArg); */
     });
 
     //////////////////////// INVOKERS ///////////////////////////
