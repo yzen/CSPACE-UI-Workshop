@@ -243,6 +243,34 @@ var Tests = function ($) {
 
     //////////////////////// EVENT BOILING //////////////////////////
 
+    fluid.defaults("test.oldEventedComponent", {
+        gradeNames: ["fluid.eventedComponent", "autoInit"],
+        events: {
+            oldEvent: null
+        }
+    });
+
+    fluid.defaults("test.myAwesomeComponent", {
+        gradeNames: ["fluid.eventedComponent", "autoInit"],
+        events: {
+            myAwesomeEvent: null
+        },
+        components: {
+            oldEC: {
+                type: "test.oldEventedComponent",
+                options: {
+                    listeners: {
+                        oldEvent: "{test.myAwesomeComponent}.events.myAwesomeEvent"
+                    }
+                }
+            }
+        }
+    });
+
+    fluid.demands("oldEvent", ["test.oldEventedComponent", "test.myAwesomeComponent"], [
+        "{oldEC}"
+    ]);
+
     fluid.defaults("test.eventedComponent2", {
         gradeNames: ["fluid.eventedComponent", "autoInit"],
         events: {
@@ -311,9 +339,11 @@ var Tests = function ($) {
     });
 
     workshopTests.test("Test Event Boiling", function () {
-        expect(/*12*/10);
+        expect(/*14*/12);
         var eventedComponent2 = test.eventedComponent2(),
-            eventArg = "This is an event argument";
+            eventArg = "This is an event argument",
+            oldEventedComponent = test.oldEventedComponent(),
+            myAwesomeComponent = test.myAwesomeComponent();
 
         // Listeners should be executed with correct arguments passed.
         eventedComponent2.events.someEvent.addListener(function (arg) {
@@ -338,6 +368,16 @@ var Tests = function ($) {
         });
         eventedComponent2.events.parentEvent.fire(eventArg);
 /*         eventedComponent2.eventBinderParent.events.boiledParent.fire(eventArg); */
+
+        oldEventedComponent.events.oldEvent.addListener(function (oldArg) {
+            jqUnit.assertEquals("Correct argument", "OldArgument", oldArg);
+        });
+        oldEventedComponent.events.oldEvent.fire("OldArgument");
+
+        myAwesomeComponent.events.myAwesomeEvent.addListener(function (comp) {
+            jqUnit.assertEquals("Custom argument is passed correctly", myAwesomeComponent.oldEC, comp);
+        });
+        myAwesomeComponent.oldEC.events.oldEvent.fire("OldArgument");
     });
 
     //////////////////////// INVOKERS ///////////////////////////
