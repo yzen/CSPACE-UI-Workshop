@@ -207,19 +207,38 @@ var Tests = function ($) {
         }
     });
 
+    fluid.defaults("test.littleComponentGrandParent", {
+        gradeNames: ["fluid.littleComponent", "autoInit"],
+        someField: "this is a grandparent test field",
+        components: {
+            subcomponent: {
+                type: "test.littleComponentParent2"
+            }
+        }
+    });
+
     fluid.demands("test.littleComponent", "test.littleComponentParent2", {
         options: {
             field: "{test.littleComponentParent2}.options.someField2"
         }
     });
 
+    fluid.demands("test.littleComponent", ["test.littleComponentParent2", "test.littleComponentGrandParent"], {
+        options: {
+            field: "{test.littleComponentGrandParent}.options.someField"
+        }
+    });
+
     workshopTests.test("Test Inversion of Control", function () {
-        var littleComponentParent2 = test.littleComponentParent2();
+        var littleComponentParent2 = test.littleComponentParent2(),
+            littleComponentGrandParent = test.littleComponentGrandParent();
 
         // If component has previously registered demands and the context matches, the depamds block will
         // be also used during options merging.
         jqUnit.assertEquals("Option should be correctly passed to subcomponent from demands",
             littleComponentParent2.options.someField2, littleComponentParent2.subcomponent.options.field);
+        jqUnit.assertEquals("Option should be correctly passed to ancestor component from demands",
+            littleComponentGrandParent.options.someField, littleComponentGrandParent.subcomponent.subcomponent.options.field);
     });
 
     //////////////////////// INVOKERS ///////////////////////////

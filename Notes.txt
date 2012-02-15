@@ -1,0 +1,9 @@
+Sketches for config files:
+
+{
+    sidebar: {
+        enableMediaSnapshot: true,
+        relatedRecords: ["procedures", "cataloging"]
+    },
+    ...
+}
