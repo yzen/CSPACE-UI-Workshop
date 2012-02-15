@@ -241,6 +241,72 @@ var Tests = function ($) {
             littleComponentGrandParent.options.someField, littleComponentGrandParent.subcomponent.subcomponent.options.field);
     });
 
+    //////////////////////// EVENT BOILING //////////////////////////
+
+    fluid.defaults("test.eventedComponent2", {
+        gradeNames: ["fluid.eventedComponent", "autoInit"],
+        events: {
+            someEvent: null,
+            someOtherEvent: null
+        },
+        field: "EC2 OPTION",
+        listeners: {
+            someEvent: {
+                listener: "{test.eventedComponent2}.events.someOtherEvent",
+                args: ["{test.eventedComponent2}.options.field", "{arguments}.0"]
+            }
+        },
+        components: {
+            eventBinderParent: {
+                type: "test.eventBinderParent"
+            }
+        }
+    });
+
+    fluid.defaults("test.eventBinderParent", {
+        gradeNames: ["fluid.eventedComponent", "autoInit"],
+        preInitFunction: "test.eventBinderParent.preInit",
+        components: {
+            eventBinder: {
+                type: "test.eventedParent.eventBinder"
+            }
+        }
+    });
+
+    test.eventBinderParent.preInit = function (that) {
+        that.handler = function () {
+            jqUnit.assert("Event boiling works correctly.");
+        };
+    };
+
+    fluid.demands("test.eventedParent.eventBinder", ["test.eventBinderParent", "test.eventedComponent2"], {
+        options: {
+            listeners: {
+                "{test.eventedComponent2}.events.someEvent": "{test.eventBinderParent}.handler"
+            }
+        }
+    });
+
+    fluid.defaults("test.eventedParent.eventBinder", {
+        gradeNames: ["autoInit", "fluid.eventedComponent"]
+    });
+
+    workshopTests.test("Test Event Boiling", function () {
+        expect(4);
+        var eventedComponent2 = test.eventedComponent2(),
+            eventArg = "This is an event argument";
+
+        // Listeners should be executed with correct arguments passed.
+        eventedComponent2.events.someEvent.addListener(function (arg) {
+            jqUnit.assertEquals("Argument was passed correctly", eventArg, arg);
+        });
+        eventedComponent2.events.someOtherEvent.addListener(function () {
+            jqUnit.assertEquals("Argument 1 was passed correctly", eventedComponent2.options.field, arguments[0]);
+            jqUnit.assertEquals("Argument 2 was passed correctly", eventArg, arguments[1]);
+        });
+        eventedComponent2.events.someEvent.fire(eventArg);
+    });
+
     //////////////////////// INVOKERS ///////////////////////////
 
     fluid.defaults("test.componentWithInvoker", {
